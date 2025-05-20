@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CTF VM Dashboard</title>
+    <link rel="stylesheet" href="/static/main.css">
+</head>
+<body>
+    <div class="background"></div>
+
+    <div id="login-container">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <p id="login-error" class="error"></p>
+    </div>
+
+    <div id="dashboard" class="hidden">
+        <div class="topbar">
+            <span id="welcome"></span>
+            <button onclick="toggleTheme()">Toggle Theme</button>
+            <button onclick="logout()">Logout</button>
+        </div>
+        <div class="content">
+            <div class="sidebar" id="vm-tree"></div>
+            <div class="main-panel" id="vm-panel">Select a VM...</div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <script src="/static/main.js"></script>
+</body>
+</html>

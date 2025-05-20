@@ -1,0 +1,249 @@
+/* Global Reset */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: 'Arial', sans-serif;
+    background-color: #1e1e1e; /* Default dark background */
+    color: white;
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Background Image */
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('https://source.unsplash.com/random/1920x1080') no-repeat center center;
+    background-size: cover;
+    filter: blur(8px);
+    z-index: -1;
+    transition: filter 0.5s ease-in-out;
+}
+
+/* Login Container */
+#login-container {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(20, 20, 20, 0.9);
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+    max-width: 400px;
+    width: 100%;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Inputs & Buttons */
+input, button {
+    display: block;
+    margin: 10px auto;
+    padding: 12px 20px;
+    width: 100%;
+    max-width: 300px;
+    border: 2px solid #444;
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: #333;
+    color: white;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+input:focus, button:hover {
+    background-color: #444;
+    border-color: #666;
+}
+
+button {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Hidden Elements */
+.hidden {
+    display: none;
+}
+
+/* Error Styling */
+.error {
+    color: #e74c3c;
+    font-size: 0.875rem;
+}
+
+/* Dashboard */
+#dashboard {
+    padding: 1rem;
+    background: #2c2c2c;
+    transition: background-color 0.3s ease;
+}
+
+/* Topbar */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background-color: #333;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.topbar h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Content Layout */
+.content {
+    display: flex;
+    min-height: 80vh;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    border-right: 1px solid #444;
+    background: #222;
+    padding: 1rem;
+    overflow-y: auto;
+    height: calc(100vh - 2rem);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Main Panel */
+.main-panel {
+    flex: 1;
+    padding: 1rem;
+    background: #2c2c2c;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    transition: background-color 0.3s ease;
+}
+
+/* Light Theme */
+body.light {
+    background-color: #f0f0f0; /* Light background */
+    color: #111; /* Light text color */
+}
+
+body.light .background {
+    filter: blur(8px) brightness(1.2); /* Adjust brightness */
+}
+
+body.light #login-container {
+    background: rgba(255, 255, 255, 0.9); /* Light background for login */
+    color: #111; /* Dark text for light mode */
+}
+
+body.light #dashboard {
+    background: #f9f9f9; /* Lighter background for the dashboard */
+}
+
+body.light .topbar {
+    background-color: #fff; /* Light background for topbar */
+    color: #333; /* Dark text for topbar */
+}
+
+body.light .sidebar {
+    background: #f9f9f9; /* Light background for sidebar */
+    border-right: 1px solid #ddd; /* Lighter border */
+}
+
+body.light .main-panel {
+    background: #f0f0f0; /* Light background for main panel */
+}
+
+/* Button Styles in Light Mode */
+body.light input, body.light button {
+    background-color: #fff; /* White background */
+    color: #333; /* Dark text */
+    border-color: #ddd; /* Light border */
+}
+
+body.light input:focus, body.light button:hover {
+    background-color: #f4f4f4; /* Slightly darker background on hover */
+    border-color: #bbb; /* Lighter border on hover */
+}
+
+/* Folder Styles */
+.folder {
+    cursor: pointer;
+    font-weight: bold;
+    transition: color 0.3s ease;
+    margin-left: 15px; /* Adds indentation to folders */
+}
+
+.folder:hover {
+    color: #3498db;
+}
+
+/* Folder Collapse/Expand */
+.collapsed {
+    display: none;
+}
+
+/* VM List Styles */
+ul {
+    list-style-type: none;
+    padding-left: 20px;
+}
+
+ul li {
+    margin: 5px 0;
+}
+
+ul li button {
+    background: transparent;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    text-align: left;
+}
+
+ul li button:hover {
+    color: #3498db;
+}
+
+/* Folder Border Fix in Light Mode */
+body.light .folder {
+    border-left: 2px solid #ddd; /* Add border for folders */
+    padding-left: 15px; /* Ensure padding is there */
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .content {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        border-right: none;
+    }
+
+    .main-panel {
+        margin-top: 1rem;
+    }
+
+    #login-container {
+        width: 90%;
+        max-width: 350px;
+    }
+}
