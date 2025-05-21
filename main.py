@@ -71,7 +71,9 @@ def get_vms():
                 vms.append({
                     'name': vm['name'],
                     'status': vm['status'],
-                    'tags': vm.get('tags', '').split(',') if 'tags' in vm else [],
+                    'tags': vm.get('tags', '').split(';') if 'tags' in vm else [],
+                    'vmid': vm['vmid'],
+                    'node': node['node']
                 })
         return jsonify(vms=vms, user=current_user.id)
     return jsonify(error="Unauthorized"), 401
