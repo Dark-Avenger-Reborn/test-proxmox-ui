@@ -88,7 +88,7 @@ def get_vms():
                 vms.append({
                     'name': vm['name'],
                     'status': vm['status'],
-                    'tags': vm.get('tags', []),  # Assuming you're managing tags within Proxmox
+                    'tags': vm.get('tags', '').split(',') if 'tags' in vm else [],
                 })
         
         return jsonify(vms=vms, user=current_user.id)
