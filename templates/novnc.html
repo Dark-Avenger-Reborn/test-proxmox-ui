@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>noVNC Console</title>
+
+    <!-- Use the correct version of noVNC that doesn't rely on ES modules -->
     <script src="https://cdn.jsdelivr.net/npm/novnc-core@1.4.0/app/ui.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/novnc-core@1.4.0/app/styles/main.css">
-    <script src="https://cdn.jsdelivr.net/npm/novnc@1.2.0/core/rfb.js"></script>
+    
+    <!-- No need to load rfb.js separately as it's included in ui.js -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/novnc@1.2.0/core/rfb.js"></script> -->
+
 </head>
 <body>
     <div id="noVNC_container" class="noVNC_container">
@@ -15,9 +20,12 @@
     </div>
 
     <script>
+        // Create the RFB object using the websocket URL passed from the server
         const rfb = new RFB(document.getElementById('noVNC_canvas'), "{{ websocket_url }}", {
-            credentials: {}
+            credentials: {} // Pass the credentials if necessary
         });
+
+        // Enable interactive mode and configure the scaling options
         rfb.viewOnly = false;
         rfb.scaleViewport = true;
         rfb.resizeSession = true;
