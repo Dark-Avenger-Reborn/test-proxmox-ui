@@ -119,7 +119,8 @@ def control_vm():
         else:
             return jsonify(error="Invalid action"), 400
 
-        updated_status = proxmox.nodes(node_name).qemu(vmid).status.get()
+        updated_status = proxmox.nodes(node_name).qemu(vmid).status.current.get()
+
         return jsonify({
             'name': vm_name,
             'status': updated_status['status']
