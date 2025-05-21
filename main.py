@@ -88,30 +88,44 @@ def control_vm():
     action = data.get('action')
 
     try:
+        target_vm = None
         for node in proxmox.nodes.get():
-            vms = proxmox.nodes(node['node']).qemu.get()
-            vm = next((v for v in vms if v['name'] == vm_name), None)
-            if vm:
-                node_name = node['node']
+            node_name = node['node']
+            vms = proxmox.nodes(node_name).qemu.get()
+            for vm in vms:
+                # Defensive check
+                if isinstance(vm, dict) and vm.get('name') == vm_name:
+                    target_vm = {
+                        'node': node_name,
+                        'vmid': vm['vmid'],
+                        'name': vm['name']
+                    }
+                    break
+            if target_vm:
                 break
-        else:
-            return jsonify(error=f"VM {vm_name} not found"), 404
 
-        vmid = vm['vmid']
+        if not target_vm:
+            return jsonify(error=f"VM '{vm_name}' not found"), 404
+
+        node_name = target_vm['node']
+        vmid = target_vm['vmid']
+
         if action == 'start':
             proxmox.nodes(node_name).qemu(vmid).status.start.post()
         elif action == 'stop':
             proxmox.nodes(node_name).qemu(vmid).status.stop.post()
         elif action == 'restart':
             proxmox.nodes(node_name).qemu(vmid).status.reboot.post()
+        else:
+            return jsonify(error="Invalid action"), 400
 
-        updated_vm = proxmox.nodes(node_name).qemu(vmid).status.get()
+        updated_status = proxmox.nodes(node_name).qemu(vmid).status.get()
         return jsonify({
             'name': vm_name,
-            'status': updated_vm['status']
+            'status': updated_status['status']
         })
+
     except Exception as e:
-        print(e)
         return jsonify(error=str(e)), 500
 
 if __name__ == '__main__':
