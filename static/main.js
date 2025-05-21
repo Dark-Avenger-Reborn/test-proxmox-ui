@@ -1,5 +1,3 @@
-let socket;
-
 // Login function
 function login() {
     const username = document.getElementById('username').value;
@@ -20,7 +18,7 @@ function login() {
         document.querySelector('.background').style.filter = 'none';
         loadDashboard();
     })
-    .catch(err => {
+    .catch(() => {
         document.getElementById('login-error').textContent = 'Invalid credentials.';
     });
 }
@@ -30,7 +28,7 @@ function logout() {
     fetch('/logout', { method: 'POST' }).then(() => location.reload());
 }
 
-// Load theme from localStorage
+// Theme from localStorage
 if (localStorage.getItem('theme') === 'light') {
     document.body.classList.add('light');
 }
@@ -41,11 +39,10 @@ function toggleTheme() {
     localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
 }
 
-// On page load, check if already logged in
+// On page load
 window.addEventListener('DOMContentLoaded', () => {
     fetch('/vms').then(res => {
         if (res.ok) {
-            // Already logged in
             document.getElementById('login-container').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             document.querySelector('.background').style.filter = 'none';
@@ -54,23 +51,20 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Load dashboard data and init socket
+// Load dashboard and VM tree
 function loadDashboard() {
     fetch('/vms')
         .then(res => res.json())
         .then(data => {
             document.getElementById('welcome').textContent = `Welcome, ${data.user}`;
             buildVMTree(data.vms);
-
-            socket = io();
-            socket.on('vm_update', updateVM);
+            startPolling();
         });
 }
 
 // Build nested VM tree by tags
 function buildVMTree(vms) {
     const tree = {};
-
     vms.forEach(vm => {
         let node = tree;
         vm.tags.forEach(tag => {
@@ -84,7 +78,7 @@ function buildVMTree(vms) {
     container.innerHTML = renderTree(tree);
 }
 
-// Render tag/VM tree as nested collapsible list
+// Render tree as collapsible list
 function renderTree(obj, path = []) {
     let html = '<ul>';
     for (let key in obj) {
@@ -92,10 +86,8 @@ function renderTree(obj, path = []) {
         const nodeId = path.concat(key).join('-');
 
         if (node.name) {
-            // VM leaf node
             html += `<li><button onclick="showVM('${node.name}')">${key}</button></li>`;
         } else {
-            // Folder node
             html += `
                 <li>
                     <span class="folder" onclick="toggleFolder('${nodeId}')">▶ ${key}</span>
@@ -109,17 +101,11 @@ function renderTree(obj, path = []) {
     return html + '</ul>';
 }
 
-// Collapse/expand folder
 function toggleFolder(id) {
     const el = document.getElementById('folder-' + id);
-    if (el.classList.contains('collapsed')) {
-        el.classList.remove('collapsed');
-    } else {
-        el.classList.add('collapsed');
-    }
+    el.classList.toggle('collapsed');
 }
 
-// Show VM details in main panel
 function showVM(name) {
     fetch('/vms')
         .then(res => res.json())
@@ -139,12 +125,22 @@ function showVM(name) {
         });
 }
 
-// Send control command to server
 function controlVM(vm, action) {
-    socket.emit('control_vm', { vm, action });
+    fetch('/control_vm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vm, action })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            alert(`Error: ${data.error}`);
+        } else {
+            updateVM(data);
+        }
+    });
 }
 
-// Live update of VM status
 function updateVM(vm) {
     const panel = document.getElementById('vm-panel');
     const header = panel.querySelector('h3');
@@ -153,4 +149,22 @@ function updateVM(vm) {
     if (status && header && header.textContent === vm.name) {
         status.textContent = vm.status;
     }
+}
+
+// Polling every 5 seconds
+function startPolling() {
+    setInterval(() => {
+        const panel = document.getElementById('vm-panel');
+        const header = panel.querySelector('h3');
+
+        if (header) {
+            const vmName = header.textContent;
+            fetch('/vms')
+                .then(res => res.json())
+                .then(data => {
+                    const vm = data.vms.find(v => v.name === vmName);
+                    if (vm) updateVM(vm);
+                });
+        }
+    }, 5000);
 }
