@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>noVNC Console</title>
-    <script src="https://cdn.jsdelivr.net/npm/novnc-core@1.4.0/app/ui.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/novnc-core@1.4.0/app/styles/main.css">
-    <script src="https://cdn.jsdelivr.net/npm/@novnc/novnc@1.4.0/lib/rfb.min.js"></script>
+
+    <!-- Use locally hosted noVNC files -->
+    <script src="{{ url_for('static', filename='novnc/core/rfb.js') }}"></script>
+    <script src="{{ url_for('static', filename='novnc/app/ui.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='novnc/app/styles/main.css') }}">
 </head>
 <body>
     <div id="noVNC_container" class="noVNC_container">
@@ -15,12 +17,15 @@
     </div>
 
     <script>
+        // Initialize the RFB object using the WebSocket URL passed from Flask
         const rfb = new RFB(document.getElementById('noVNC_canvas'), "{{ websocket_url }}", {
-            credentials: {}
+            credentials: {}  // Add any necessary credentials here
         });
-        rfb.viewOnly = false;
-        rfb.scaleViewport = true;
-        rfb.resizeSession = true;
+
+        // Set additional options for noVNC behavior
+        rfb.viewOnly = false; // Allow interaction with the VM
+        rfb.scaleViewport = true; // Scale the viewport to fit
+        rfb.resizeSession = true; // Automatically resize the session based on the canvas size
     </script>
 </body>
 </html>
