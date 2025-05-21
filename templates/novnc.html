@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>noVNC Console</title>
+    <script src="https://cdn.jsdelivr.net/npm/novnc-core@1.4.0/app/ui.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/novnc-core@1.4.0/app/styles/main.css">
+</head>
+<body>
+    <div id="noVNC_container" class="noVNC_container">
+        <div id="noVNC_screen">
+            <canvas id="noVNC_canvas"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const rfb = new RFB(document.getElementById('noVNC_canvas'), "{{ websocket_url }}", {
+            credentials: {}
+        });
+        rfb.viewOnly = false;
+        rfb.scaleViewport = true;
+        rfb.resizeSession = true;
+    </script>
+</body>
+</html>

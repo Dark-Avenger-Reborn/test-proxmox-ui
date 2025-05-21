@@ -3,9 +3,14 @@ from flask import Flask, render_template, request, jsonify
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user
 from proxmoxer import ProxmoxAPI
 from dotenv import load_dotenv
+from flask_sock import Sock
+import websockets
+import asyncio
 
+# Load environment variables
 load_dotenv()
 
+# Initialize the Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(32)
 app.config.update(
@@ -14,7 +19,7 @@ app.config.update(
     SESSION_COOKIE_SAMESITE='Lax'
 )
 
-# Proxmox
+# Proxmox API connection
 proxmox = ProxmoxAPI(
     os.environ.get('PROXMOX_SERVER'),
     user=os.environ.get('PROXMOX_USER'),
@@ -22,7 +27,7 @@ proxmox = ProxmoxAPI(
     verify_ssl=False,
 )
 
-# Auth
+# Auth Setup
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -41,6 +46,49 @@ def load_user(user_id):
     if user_id in users:
         return User(user_id)
 
+# WebSocket proxy setup
+sock = Sock(app)
+
+@sock.route('/vncws/<node>/<int:vmid>')
+def vnc_websocket(ws, node, vmid):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        # Request VNC ticket and port from Proxmox
+        resp = proxmox.nodes(node).qemu(vmid).vncproxy.post()
+        port = resp['port']
+        ticket = resp['ticket']
+
+        # Build WebSocket target URL (internal)
+        target_ws_url = f"wss://{os.environ['PROXMOX_SERVER']}:8006/api2/json/nodes/{node}/qemu/{vmid}/vncwebsocket?port={port}&vncticket={ticket}"
+
+        async def proxy():
+            async with websockets.connect(
+                target_ws_url,
+                ssl=True,
+                extra_headers={'Authorization': f"PVEAPIToken={os.environ['PROXMOX_USER']}={ticket}"}
+            ) as remote_ws:
+
+                async def forward_to_proxmox():
+                    while True:
+                        msg = await ws.receive()
+                        await remote_ws.send(msg)
+
+                async def forward_to_client():
+                    while True:
+                        msg = await remote_ws.recv()
+                        ws.send(msg)
+
+                await asyncio.gather(forward_to_proxmox(), forward_to_client())
+
+        loop.run_until_complete(proxy())
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+        ws.close()
+
+
+# Route to display VMs
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -61,6 +109,7 @@ def logout():
     logout_user()
     return jsonify(success=True)
 
+# Get VM details
 @app.route('/vms')
 def get_vms():
     if current_user.is_authenticated:
@@ -78,6 +127,7 @@ def get_vms():
         return jsonify(vms=vms, user=current_user.id)
     return jsonify(error="Unauthorized"), 401
 
+# Route to handle VM control actions
 @app.route('/control_vm', methods=['POST'])
 def control_vm():
     if not current_user.is_authenticated:
@@ -93,8 +143,7 @@ def control_vm():
             node_name = node['node']
             vms = proxmox.nodes(node_name).qemu.get()
             for vm in vms:
-                # Defensive check
-                if isinstance(vm, dict) and vm.get('name') == vm_name:
+                if vm.get('name') == vm_name:
                     target_vm = {
                         'node': node_name,
                         'vmid': vm['vmid'],
@@ -129,5 +178,6 @@ def control_vm():
     except Exception as e:
         return jsonify(error=str(e)), 500
 
+# Start Flask app
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5000)
