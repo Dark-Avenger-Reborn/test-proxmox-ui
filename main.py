@@ -88,7 +88,7 @@ def vnc_websocket(ws, node, vmid):
         ws.close()
 
 @app.route('/novnc/<vmid>')
-def novnc(vm_id):
+def novnc(vmid):
     if not current_user.is_authenticated:
         return jsonify(error="Unauthorized"), 401
 
@@ -98,7 +98,7 @@ def novnc(vm_id):
         for node in proxmox.nodes.get():
             node_name = node['node']
             for vm in proxmox.nodes(node_name).qemu.get():
-                if str(vm['vmid']) == str(vm_id):
+                if str(vm['vmid']) == str(vmid):
                     target_node = node_name
                     break
             if target_node:
@@ -108,14 +108,12 @@ def novnc(vm_id):
             return "VM not found", 404
 
         # We will handle the WebSocket proxying internally
-        websocket_url = f"wss://{request.host}/vncws/{target_node}/{vm_id}"
+        websocket_url = f"wss://{request.host}/vncws/{target_node}/{vmid}"
 
         return render_template('novnc.html', websocket_url=websocket_url)
 
     except Exception as e:
         return f"Error: {str(e)}", 500
-
-
 
 # Route to display VMs
 @app.route('/')
