@@ -120,7 +120,7 @@ function showVM(name) {
                 <button onclick="controlVM('${vm.name}', 'stop')">Stop</button>
                 <button onclick="controlVM('${vm.name}', 'restart')">Restart</button>
                 <br><br>
-                <a href="http://example.com/novnc/${vm.name}" target="_blank">Open noVNC</a>
+                <a href="https://${window.location.hostname}/novnc/${vm.name}" target="_blank">Open noVNC</a>
             `;
         });
 }

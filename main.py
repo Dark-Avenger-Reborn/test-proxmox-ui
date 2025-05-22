@@ -129,5 +129,27 @@ def control_vm():
     except Exception as e:
         return jsonify(error=str(e)), 500
 
+@app.route('/novnc/<vm_name>')
+def novnc(vm_name):
+    if not current_user.is_authenticated:
+        return "Unauthorized", 401
+
+    try:
+        for node in proxmox.nodes.get():
+            node_name = node['node']
+            for vm in proxmox.nodes(node_name).qemu.get():
+                if vm['name'] == vm_name:
+                    vmid = vm['vmid']
+                    # Create VNC ticket
+                    response = proxmox.nodes(node_name).qemu(vmid).vncproxy.post()
+                    ticket = response['ticket']
+                    port = response['port']
+                    # Construct WebSocket URL for noVNC
+                    return render_template('novnc.html', port=port, ticket=ticket, vmid=vmid, node=node_name)
+        return "VM not found", 404
+    except Exception as e:
+        return str(e), 500
+
+
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5000)

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>noVNC Console</title>
+    <script src="https://cdn.jsdelivr.net/npm/novnc-core@1.4.0/novnc.min.js"></script>
+</head>
+<body>
+    <h3>VM Console</h3>
+    <div id="noVNC_container" style="width: 100%; height: 90vh;"></div>
+
+    <script>
+        const rfb = new RFB(
+            document.getElementById('noVNC_container'),
+            `wss://${window.location.hostname}:{{ port }}/?vncticket={{ ticket }}`
+        );
+        rfb.viewOnly = false;
+        rfb.scaleViewport = true;
+        rfb.background = '#000';
+    </script>
+</body>
+</html>
