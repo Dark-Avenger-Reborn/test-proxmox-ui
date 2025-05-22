@@ -6,16 +6,18 @@
 <body>
     <h3>VM Console</h3>
     <div id="noVNC_container" style="width: 100%; height: 90vh;"></div>
-    <script src="https://cdn.jsdelivr.net/npm/novnc-core@0.3.0/lib/rfb.js"></script>
-
-    <script type="module">
-        const rfb = new window.RFB(
-            document.getElementById('noVNC_container'),
-            `wss://${window.location.hostname}:{{ port }}/?vncticket={{ ticket }}`
-        );
-        rfb.viewOnly = false;
-        rfb.scaleViewport = true;
-        rfb.background = '#000';
+    <script src="https://cdn.jsdelivr.net/npm/novnc@1.4.0/app/webutil.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/novnc@1.4.0/core/rfb.js"></script>
+    <script>
+    // RFB is now available as a global variable
+    const rfb = new RFB(
+        document.getElementById('noVNC_container'),
+        `wss://${window.location.hostname}:{{ port }}/?vncticket={{ ticket }}`
+    );
+    rfb.viewOnly = false;
+    rfb.scaleViewport = true;
+    rfb.background = '#000';
     </script>
+
 </body>
 </html>
