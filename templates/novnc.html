@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/novnc@1.4.0/app/webutil.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/novnc@1.4.0/core/rfb.js"></script>
     <script>
-        $(document).ready(function() {
+        window.addEventListener('DOMContentLoaded', () => {
             const rfb = new RFB(
                 document.getElementById('noVNC_container'),
                 `wss://${window.location.hostname}:{{ port }}/?vncticket={{ ticket }}`
